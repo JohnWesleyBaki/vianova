@@ -34,6 +34,7 @@ func main() {
 		}
 
 	} else if mode == "client" {
+
 		conn, err := net.Dial("tcp", "localhost:4040")
 		if err != nil {
 			fmt.Println("Error: ", err)
@@ -44,29 +45,34 @@ func main() {
 
 		// var str string
 		// fmt.Scanln(&str)
-		fmt.Println("Enter the Message")
 		reader := bufio.NewReader(os.Stdin)
-		str, err := reader.ReadString('\n')
+		for {
+			fmt.Println("Enter the Message")
 
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
+			str, err := reader.ReadString('\n')
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			_, err = conn.Write([]byte(str))
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
+
+			fmt.Println("Message sent")
+
+			s := make([]byte, 1024)
+			n, err := conn.Read(s)
+			if err != nil {
+				fmt.Println("Client failed to read:", err)
+				return
+			}
+
+			fmt.Printf("Server sent : %s\n", string(s[:n]))
+
 		}
-		_, err = conn.Write([]byte(str))
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-
-		fmt.Println("Message sent")
-
-		s := make([]byte, 1024)
-		n, err := conn.Read(s)
-		if err != nil {
-			fmt.Println("Client failed to read:", err)
-		}
-
-		fmt.Printf("Server sent : %s\n", string(s[:n]))
 
 	}
 
@@ -75,25 +81,26 @@ func main() {
 func handleConnection(conn net.Conn) {
 
 	defer conn.Close()
+	for {
 
-	s := make([]byte, 1024)
-	n, err := conn.Read(s)
-	if err != nil {
-		fmt.Println("Error: ", err)
+		s := make([]byte, 1024)
+		n, err := conn.Read(s)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+		fmt.Println("Received: ", string(s[:n]))
+
+		// reader := bufio.NewReader(os.Stdin)
+		// str, err := reader.ReadString('\n')
+
+		// if err != nil {
+		// 	fmt.Println("Error :", err)
+		// 	return
+		// }
+
+		_, err = conn.Write([]byte(s[:n]))
+		if err != nil {
+			fmt.Println("Server failed to send Reply: ", err)
+		}
 	}
-	fmt.Println("Received: ", string(s[:n]))
-
-	reader := bufio.NewReader(os.Stdin)
-	str, err := reader.ReadString('\n')
-
-	if err != nil {
-		fmt.Println("Error :", err)
-		return
-	}
-
-	_, err = conn.Write([]byte(str))
-	if err != nil {
-		fmt.Println("Server failed to send Reply: ", err)
-	}
-
 }
