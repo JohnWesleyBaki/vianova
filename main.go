@@ -98,7 +98,7 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func recieveMessages(conn net.Conn) {
+func receiveMessages(conn net.Conn) {
 	for {
 
 		s := make([]byte, 1024)
