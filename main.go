@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
@@ -46,7 +47,7 @@ func main() {
 		// var str string
 		// fmt.Scanln(&str)
 		reader := bufio.NewReader(os.Stdin)
-		go recieveMessages(conn)
+		go receiveMessages(conn)
 		for {
 			fmt.Println("Enter the Message")
 
@@ -72,15 +73,23 @@ func main() {
 func handleConnection(conn net.Conn) {
 
 	defer conn.Close()
+	reader := bufio.NewReader(conn)
 	for {
 
-		s := make([]byte, 1024)
-		n, err := conn.Read(s)
+		// s := make([]byte, 1024)
+		// n, err := conn.Read(s)
+
+		msg, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error: ", err)
+			if err == io.EOF {
+				fmt.Println("Client disconnected")
+			} else {
+				fmt.Println("Server failed to read:", err)
+			}
+
 			return
 		}
-		fmt.Println("Received: ", string(s[:n]))
+		fmt.Println("Received: ", msg)
 
 		// reader := bufio.NewReader(os.Stdin)
 		// str, err := reader.ReadString('\n')
@@ -90,7 +99,7 @@ func handleConnection(conn net.Conn) {
 		// 	return
 		// }
 
-		_, err = conn.Write([]byte(s[:n]))
+		_, err = conn.Write([]byte(msg))
 		if err != nil {
 			fmt.Println("Server failed to send Reply: ", err)
 			return
@@ -104,7 +113,12 @@ func receiveMessages(conn net.Conn) {
 		s := make([]byte, 1024)
 		n, err := conn.Read(s)
 		if err != nil {
-			fmt.Println("Client failed to read:", err)
+			if err == io.EOF {
+				fmt.Println("Client disconnected")
+			} else {
+				fmt.Println("Client failed to read:", err)
+			}
+
 			return
 		}
 
