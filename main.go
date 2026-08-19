@@ -44,12 +44,10 @@ func main() {
 
 		defer conn.Close()
 
-		// var str string
-		// fmt.Scanln(&str)
 		reader := bufio.NewReader(os.Stdin)
 		go receiveMessages(conn)
 		for {
-			fmt.Println("Enter the Message")
+			// fmt.Println("Enter the Message")
 
 			str, err := reader.ReadString('\n')
 
@@ -91,14 +89,6 @@ func handleConnection(conn net.Conn) {
 		}
 		fmt.Println("Received: ", msg)
 
-		// reader := bufio.NewReader(os.Stdin)
-		// str, err := reader.ReadString('\n')
-
-		// if err != nil {
-		// 	fmt.Println("Error :", err)
-		// 	return
-		// }
-
 		_, err = conn.Write([]byte(msg))
 		if err != nil {
 			fmt.Println("Server failed to send Reply: ", err)
@@ -108,13 +98,14 @@ func handleConnection(conn net.Conn) {
 }
 
 func receiveMessages(conn net.Conn) {
+
+	reader := bufio.NewReader(conn)
 	for {
 
-		s := make([]byte, 1024)
-		n, err := conn.Read(s)
+		msg, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("Client disconnected")
+				fmt.Println("Server disconnected")
 			} else {
 				fmt.Println("Client failed to read:", err)
 			}
@@ -122,7 +113,7 @@ func receiveMessages(conn net.Conn) {
 			return
 		}
 
-		fmt.Printf("Server sent : %s\n", string(s[:n]))
+		fmt.Printf("Server sent : %s\n", msg)
 
 	}
 }
