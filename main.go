@@ -47,7 +47,7 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		go receiveMessages(conn)
 		for {
-			// fmt.Println("Enter the Message")
+			fmt.Println("Enter the Message")
 
 			str, err := reader.ReadString('\n')
 
